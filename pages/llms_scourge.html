@@ -5,20 +5,23 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>LLMs are a scourge on development</title>
+    <title>LLMs are destroying juniors</title>
     <link href="css/style.css" rel="stylesheet">
   </head>
   <body>
     <h1>LLMs are ruining junior developers</h1>
     Okay I've gone from being an LLM evangelist to thinking it is a scourge on development as a whole. I am so grateful I learned to code without it. Three things that I think have happened:
     <ul>
-      <li>People's PRs are now 1600 lines long by default. It's much too easy to just write immense amounts of code, write some tests that look passable, then hand off responsibility to your reviewers to essentially re-prompt the LLM with fixes. Now your reviewers are either: LLMs that think their own code is fucking great, or humans that literally can't review the code because it's too fucking long.</li>
+      <li>People's PRs are now 1600 lines long by default. It's much too easy to just write immense amounts of code, write some tests that look passable, then hand off responsibility to your reviewers to essentially re-prompt the LLM with fixes. Now your reviewers are either: LLMs that think their own code is great, or humans that literally can't review the code because it's too long.</li>
       <li>People who do not have years of coding experience do not review their own code. They think they understand it and they think it works but it does not and they do not.</li>
       <li>Junior developers are in a race to the bottom, if you aren't producing as much code as your peers you're gonna be seen as less, so there's pressure to over rely on LLMs to keep up. Now you're not learning, and ultimately you are a glorified LLM because you don't know enough to question the code they're producing.</li>
     </ul>
-    <h2>What can we do about it?</h2>
-    LLMs are here to stay. Believe what you want about a bubble, a developer is not the same person as they were five years ago, and I can't see the entire industry collectively deciding to just stop using the thing that in the best case DOES make its people more productive.
-    So, there must be ways of curtailing use to only behaviours that are least likely to produce bad code.
+    How do you have the time to become an equivalent senior when there are <a href="https://www.aboutamazon.com/news/company-news/amazon-workforce-reduction">no jobs</a> willing to give them the time it takes to become a senior?
+    I am so grateful to have never had the option of asking the Almighty Child to write up some code I didn't understand. If I had it, I would have used it, and I would have been a measurably worse developer (and prompter).
+    LLMs have left their mark. Believe what you want about a bubble, a developer is not the same person as they were five years ago, and I can't see the entire industry collectively deciding to just stop using the thing that in the best case DOES make its people more productive.
+    So, the least we can do for our younger selves is find ways to make sure there is still space for learning. The pressure driving juniors towards this is social, so we need a social solution. Ultimately it's the same old problem, how do we reward steady improvement over productivity? I don't know, I hope that given the moment where that's my decision to make, I remember the lessons foisted upon me.
+
+    But I'm not, so are there ways of curtailing LLMs to only behaviours that are least likely to produce bad code? There are a million guides on prompting online, I'm not particularly good at it. But I do think there are a couple of simple things we can do.
     <h3>Test Driven Development</h3>
     I used to be a bit of a fanatic. Then I needed to make a change to the code I had written because (shockingly) I hadn't known the full scope of the problem I was solving. Cue about 50 unit tests ensuring every conceivable edge case was covered failing. A simple change took an hour. Moderate changes took days. It's not fun to write TDD code, and it's even more not fun to update TDD'ed code.<br>
     TDD is great in theory, bad in practice.<br>
@@ -29,6 +32,8 @@
     They hurt LLMs even more. A single comment asking for an architectural change in a 2,000 line MR is simply untenable for an LLM to effectively correct for.
     So, make your PRs small. If not for your reviewers or yourself, for your poor LLM. It's trying its best.<br><br>
     I don't know how to enforce these things in practice, but I think it is done socially, not through some LLM config CLAUDE.md file. Agree on a limit in your team and reject PRs longer than that limit. There are ways to split PRs up. It's a skill that everyone needs to master.<br>
-    Any maybe update your reviewer LLMs to speak out about it too, maybe people trust those more than humans.
+    Any maybe update your reviewer LLMs to speak out about it too, maybe people trust those more than humans these days.
+    All of this is predicated on the idea that my own journey was the best one. Growing up we are all confronted with adults imposing their views on us, but the truth is we all grow up in a different world. My lessons aren't those of my predecessors, and won't be those of my postdecessors. The skills that the juniors <i>are</i> learning on their own will be more important than the lessons I can teach them.
+    But what has been true of my predecessors and will be true of my postdecessors, we all have to try our best.
   </body>
 </html>
