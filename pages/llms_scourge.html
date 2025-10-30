@@ -30,7 +30,16 @@
     <h3>Limit the size of PRs</h3>
     Big PRs hurt. They hurt to review, they hurt to receive reviews on.<br>
     They hurt LLMs even more. A single comment asking for an architectural change in a 2,000 line MR is simply untenable for an LLM to effectively correct for.
-    So, make your PRs small. If not for your reviewers or yourself, for your poor LLM. It's trying its best.<br><br>
+    So, make your PRs small. If not for your reviewers or yourself, for your poor LLM. It's trying its best.
+    <h3>Commit hooks</h3>
+    One thing that has become clear over time working with Claude is that there are certain patterns that it defaults to. I suppose that's a reflection of us. Some examples from my beloved Go:
+    <ol>
+      <li>Using <code>defer</code> and <code>context.Background()</code> instead of <code>t.Cleanup(..)</code> and <code>t.Context()</code> in tests. This annoys me endlessly and I can't think of a reason not to use these.</li>
+      <li>Inserting a space between a function call and the subsequent <code>if err != nil {..}</code> check</li>
+      <li>I'm sure I'll think of more and wish I added them to this list</li>
+    </ol>
+    It hurts nobody to add a commit hook checking for these. Do that. Anything that you think 'add this rule to our CLAUDE.md', first ask yourself 'can this be a commit hook'.
+    <br><br>
     I don't know how to enforce these things in practice, but I think it is done socially, not through some LLM config CLAUDE.md file. Agree on a limit in your team and reject PRs longer than that limit. There are ways to split PRs up. It's a skill that everyone needs to master.<br>
     Maybe also update your reviewing LLMs to speak out about it too, maybe people trust those more than humans these days.
     All of this is predicated on the idea that my own journey was the best one. Growing up we are all confronted with adults imposing their views on us, but the truth is we all grow up in a different world. My lessons aren't those of my predecessors, and won't be those of my postdecessors. The skills that the juniors <i>are</i> learning on their own will be more important than the lessons I can teach them.
