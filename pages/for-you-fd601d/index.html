@@ -21,6 +21,7 @@
     [hidden] { display: none !important; } /* .envelope sets display, which would beat the attribute */
     body {
       position: relative; /* frames are scattered down the whole document */
+      z-index: 0; /* own stacking context; without it Safari drops the body gradient behind the fixed ::before */
       min-height: 100dvh;
       display: grid;
       place-items: center;
@@ -376,7 +377,7 @@
     <button class="close" aria-label="Send back">&times;</button>
   </figure>
   <figure class="photo" tabindex="0" style="--delay: .8s; --x: 89%; --y: 64%; --rot: -7deg">
-    <img src="photos/photo-5.webp" alt="">
+    <img src="photos/photo-5.jpg" alt="">
     <figcaption>first date (ft. a whale)</figcaption>
     <button class="close" aria-label="Send back">&times;</button>
   </figure>
