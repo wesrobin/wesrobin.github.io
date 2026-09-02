@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>For you</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #fbf6ec;
+      --paper-dark: #e9dcc6;
+      --ink: #2b1a17;
+      --wax: #a3122b;
+      --photo-w: clamp(100px, 17vw, 230px);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    [hidden] { display: none !important; } /* .envelope sets display, which would beat the attribute */
+    body {
+      position: relative; /* frames are scattered down the whole document */
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: 6vh 4vw;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background: radial-gradient(ellipse at 50% 115%, #5a1220 0%, #24070c 45%, #0b0304 100%);
+      overflow-x: hidden;
+    }
+    /* slow drifting glow behind everything */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -20%;
+      z-index: -1;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(190, 40, 70, .28), transparent 40%),
+        radial-gradient(circle at 70% 70%, rgba(120, 20, 40, .35), transparent 45%);
+      animation: drift 40s ease-in-out infinite alternate;
+    }
+    @keyframes drift {
+      from { transform: translate(-3%, -2%) rotate(0deg); }
+      to   { transform: translate(3%, 2%) rotate(6deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body::before { animation: none; }
+      * { transition: none !important; }
+    }
+
+    /* envelope */
+    .envelope {
+      all: unset;
+      cursor: pointer;
+      position: relative;
+      width: min(86vw, 440px);
+      aspect-ratio: 1.55;
+      background: var(--paper);
+      border-radius: 8px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, .65), 0 2px 6px rgba(0,0,0,.4);
+      display: grid;
+      place-items: center;
+      perspective: 800px;
+      transition: transform .65s cubic-bezier(.2,.7,.2,1), opacity .65s ease;
+    }
+    .envelope:focus-visible { outline: 3px solid #fff; outline-offset: 6px; }
+    .envelope:hover { transform: translateY(-4px) rotate(-.5deg); }
+    .envelope::before {
+      /* flap */
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 56%;
+      background: var(--paper-dark);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      border-radius: 8px 8px 0 0;
+      transform-origin: 50% 0;
+      transition: transform .8s cubic-bezier(.45, 0, .2, 1), background-color .8s ease;
+    }
+    .envelope::after {
+      /* bottom fold lines */
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+      background:
+        linear-gradient(to top left, transparent 49.6%, rgba(0,0,0,.06) 50%, transparent 50.4%) no-repeat,
+        linear-gradient(to top right, transparent 49.6%, rgba(0,0,0,.06) 50%, transparent 50.4%) no-repeat;
+      pointer-events: none;
+    }
+    .seal {
+      position: relative;
+      z-index: 1;
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #d4304a, var(--wax) 60%, #6e0a1c);
+      box-shadow: 0 4px 10px rgba(0,0,0,.35), inset 0 0 0 4px rgba(255,255,255,.08);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 34px;
+      transform: translateY(-6%);
+      transition: transform .3s ease, opacity .3s ease;
+    }
+    .hint {
+      position: absolute;
+      bottom: 12%;
+      left: 0; right: 0;
+      text-align: center;
+      font-size: .95rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #6b4b45;
+      opacity: .8;
+    }
+    .envelope.opening {
+      transform: translateY(-40px) scale(.92);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .7s ease .3s, opacity .7s ease .3s;
+    }
+    .envelope.opening::before {
+      transform: rotateX(180deg);
+      background: #d6c3a5; /* the inside of the flap, a shade darker */
+    }
+    .envelope.opening .seal {
+      transform: translateY(-6%) scale(0);
+      opacity: 0;
+    }
+
+    /* letter */
+    .letter {
+      position: relative;
+      width: min(94vw, 960px);
+      background: var(--paper);
+      padding: clamp(10px, 1.6vw, 18px);
+      border-radius: 4px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, .65);
+      font-family: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+      font-size: clamp(1.4rem, 1.1rem + 1.4vw, 1.95rem);
+      line-height: 1.4;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 1.1s ease .2s, transform 1.1s ease .2s;
+    }
+    .letter.show { opacity: 1; transform: none; }
+    @media (min-width: 1100px) {
+      /* fill the gap between the photo columns (innermost anchors sit 11vw from each edge) */
+      .letter { width: min(960px, calc(100vw - 2 * (11vw + var(--photo-w) / 2) - 84px)); }
+    }
+    .letter p { margin: 0 0 1.1em; }
+    .letter ul { margin: 0 0 1.1em 1.2em; padding: 0; }
+    .letter .sign { margin-top: 1.6em; }
+    /* pages exported from Goodnotes go here as images */
+    .letter img.page {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin: 0 0 .6rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,.15);
+    }
+    .letter img.page:last-child { margin-bottom: 0; }
+
+    /* hearts that fall from the pointer while it moves over the envelope */
+    .hearts {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .heart {
+      position: absolute;
+      width: var(--size);
+      height: var(--size);
+      margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35));
+      will-change: translate, scale, opacity;
+      animation:
+        heart-fall var(--dur) cubic-bezier(.45, 0, .85, .55) forwards,
+        heart-grow var(--dur) ease-out forwards;
+    }
+    .heart svg { display: block; width: 100%; height: 100%; }
+    @keyframes heart-fall {
+      from { translate: 0 0; rotate: 0deg; }
+      to   { translate: var(--dx) var(--fall); rotate: var(--rot); }
+    }
+    @keyframes heart-grow {
+      0%   { scale: 0; opacity: 0; }
+      20%  { scale: 1; opacity: .95; }
+      75%  { opacity: .9; }
+      100% { scale: .85; opacity: 0; }
+    }
+
+    /* photos scattered behind everything; click one to bring it forward */
+    .photo {
+      --w: var(--photo-w);
+      --x: 50%; --y: 50%; --rot: 0deg; /* --y is a share of the whole page, not the screen */
+      position: absolute;
+      z-index: 0;
+      top: var(--y);
+      left: var(--x);
+      width: var(--w);
+      margin: 0;
+      padding: calc(var(--w) * .06) calc(var(--w) * .06) calc(var(--w) * .08);
+      font-size: calc(var(--w) * .09);
+      background: var(--paper);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, .5);
+      transform: translate(-50%, -50%) rotate(var(--rot));
+      filter: brightness(.82);
+      cursor: pointer;
+      visibility: hidden;
+      opacity: 0;
+      transition:
+        width .45s cubic-bezier(.2,.7,.2,1), padding .45s cubic-bezier(.2,.7,.2,1), font-size .45s cubic-bezier(.2,.7,.2,1),
+        top .45s cubic-bezier(.2,.7,.2,1), left .45s cubic-bezier(.2,.7,.2,1), transform .45s cubic-bezier(.2,.7,.2,1),
+        filter .3s ease, box-shadow .3s ease,
+        z-index .45s step-end, /* stay on top while animating back */
+        opacity .9s ease var(--delay, 0s), visibility 0s linear var(--delay, 0s);
+    }
+    body.opened .photo { visibility: visible; opacity: 1; }
+    body.lightbox { overflow: hidden; } /* no scrolling while a photo is up */
+    .photo:not(.front):hover {
+      transform: translate(-50%, -50%) rotate(var(--rot)) scale(1.05);
+      filter: none;
+    }
+    .photo img, .photo video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 3 / 4; /* phone media is portrait */
+      object-fit: cover;
+      background: #bfae9e;
+    }
+    .photo figcaption {
+      font-family: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+      font-size: 1em;
+      line-height: 1;
+      text-align: center;
+      color: #5a4640;
+      margin-top: .45em;
+    }
+    .photo.front {
+      --w: min(78vw, 480px, 58vh); /* portrait frame is ~1.5x its width tall */
+      top: var(--fy, 50%); /* centre of the current screen, set by the script */
+      left: var(--fx, 50%);
+      transform: translate(-50%, -50%) rotate(0deg);
+      z-index: 5;
+      filter: none;
+      cursor: default;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .7);
+      transition:
+        width .45s cubic-bezier(.2,.7,.2,1), padding .45s cubic-bezier(.2,.7,.2,1), font-size .45s cubic-bezier(.2,.7,.2,1),
+        top .45s cubic-bezier(.2,.7,.2,1), left .45s cubic-bezier(.2,.7,.2,1), transform .45s cubic-bezier(.2,.7,.2,1),
+        filter .3s ease, box-shadow .3s ease,
+        z-index 0s;
+    }
+    .photo .close {
+      display: none;
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: #1a0508;
+      color: #f3e9dc;
+      font: 18px/30px Georgia, serif;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .5);
+    }
+    .photo .close:hover { background: var(--wax); }
+    .photo.front .close { display: block; }
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 4;
+      background: rgba(10, 3, 4, .6);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s ease;
+    }
+    .backdrop.show { opacity: 1; pointer-events: auto; }
+
+    /* player: volume + pause, bottom right */
+    .player {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 4px 4px 14px;
+      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,0,.45);
+      color: #f3e9dc;
+      border-radius: 999px;
+      backdrop-filter: blur(6px);
+    }
+    .vol {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-right: 10px;
+      border-right: 1px solid rgba(255,255,255,.2);
+    }
+    .vol svg { display: block; opacity: .8; }
+    .volume {
+      --v: 1; /* 0..1, set from the slider so the track fills up to the thumb */
+      -webkit-appearance: none;
+      appearance: none;
+      width: 84px;
+      height: 4px;
+      margin: 0;
+      border-radius: 2px;
+      background: linear-gradient(to right, #f3e9dc calc(var(--v) * 100%), rgba(255,255,255,.3) 0);
+      cursor: pointer;
+    }
+    .volume:focus-visible { outline: 2px solid #fff; outline-offset: 6px; }
+    .volume::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #f3e9dc;
+      box-shadow: 0 1px 3px rgba(0,0,0,.45);
+    }
+    .volume::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border: 0;
+      border-radius: 50%;
+      background: #f3e9dc;
+      box-shadow: 0 1px 3px rgba(0,0,0,.45);
+    }
+    .volume::-moz-range-track { background: transparent; }
+    .music {
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      font-size: .9rem;
+      padding: .4em .8em;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .music:hover { background: rgba(255,255,255,.1); }
+  </style>
+</head>
+<body>
+
+  <!--
+    Photos: photos/photo-N.* (jpg/webp, or mp4 + poster for a silent loop), shown portrait 3:4 cropped; match the src below.
+    --y is a share of the whole page height, so frames lower down appear as the letter is scrolled.
+    and edit the captions. --x/--y is where the centre of each sits, --rot its lean.
+  -->
+  <figure class="photo" tabindex="0" style="--delay: .2s; --x: 10%; --y: 9%; --rot: -7deg">
+    <video src="photos/photo-1.mp4" poster="photos/photo-1-poster.jpg" muted loop playsinline preload="none"></video>
+    <figcaption>us one day</figcaption>
+    <button class="close" aria-label="Send back">&times;</button>
+  </figure>
+  <figure class="photo" tabindex="0" style="--delay: .4s; --x: 90%; --y: 12%; --rot: 6deg">
+    <img src="photos/photo-2.jpg" alt="">
+    <figcaption>my girl can do it all</figcaption>
+    <button class="close" aria-label="Send back">&times;</button>
+  </figure>
+  <figure class="photo" tabindex="0" style="--delay: .6s; --x: 10%; --y: 50%; --rot: 5deg">
+    <img src="photos/photo-3.webp" alt="">
+    <figcaption>the first drink</figcaption>
+    <button class="close" aria-label="Send back">&times;</button>
+  </figure>
+  <figure class="photo" tabindex="0" style="--delay: .8s; --x: 89%; --y: 64%; --rot: -7deg">
+    <img src="photos/photo-5.webp" alt="">
+    <figcaption>first date (ft. a whale)</figcaption>
+    <button class="close" aria-label="Send back">&times;</button>
+  </figure>
+  <figure class="photo" tabindex="0" style="--delay: 1s; --x: 11%; --y: 29%; --rot: 4deg">
+    <img src="photos/photo-4.jpg" alt="">
+    <figcaption>drunken wanderings</figcaption>
+    <button class="close" aria-label="Send back">&times;</button>
+  </figure>
+  <figure class="photo" tabindex="0" style="--delay: 1.2s; --x: 91%; --y: 38%; --rot: -5deg">
+    <video src="photos/photo-6.mp4" poster="photos/photo-6-poster.jpg" muted loop playsinline preload="none"></video>
+    <figcaption>my first snow angel</figcaption>
+    <button class="close" aria-label="Send back">&times;</button>
+  </figure>
+  <figure class="photo" tabindex="0" style="--delay: .3s; --x: 10%; --y: 71%; --rot: -6deg">
+    <img src="photos/photo-7.jpg" alt="">
+    <figcaption>this one's a metaphor</figcaption>
+    <button class="close" aria-label="Send back">&times;</button>
+  </figure>
+  <figure class="photo" tabindex="0" style="--delay: .5s; --x: 90%; --y: 88%; --rot: 5deg">
+    <img src="photos/photo-8.jpg" alt="">
+    <figcaption>wedding chic</figcaption>
+    <button class="close" aria-label="Send back">&times;</button>
+  </figure>
+  <figure class="photo" tabindex="0" style="--delay: .7s; --x: 10%; --y: 90%; --rot: 7deg">
+    <img src="photos/photo-9.jpg" alt="">
+    <figcaption>international love</figcaption>
+    <button class="close" aria-label="Send back">&times;</button>
+  </figure>
+  <div class="backdrop" id="backdrop"></div>
+
+  <button class="envelope" id="envelope" aria-label="Open the letter">
+    <span class="seal" aria-hidden="true">&hearts;</span>
+    <span class="hint">tap to open</span>
+  </button>
+  <div class="hearts" id="hearts" aria-hidden="true"></div>
+
+  <article class="letter" id="letter" hidden>
+    <!--
+      Stub letter. To use the real one:
+        1. Export from Goodnotes as Image (PNG), one file per page.
+        2. Drop them in ./letter/ as page-1.png, page-2.png, ...
+        3. Delete the .stub block below and uncomment the <img> lines.
+    -->
+<!--    <div class="stub">-->
+<!--      <p>Dear you,</p>-->
+<!--      <p>Happy anniversary.</p>-->
+<!--      <p>I have not written this yet. A computer wrote this bit while I was busy pretending to work. It has never met you and it already thinks you sound great.</p>-->
+<!--      <p>The real one is coming. Handwritten, on the iPad, with the good pen. It will have spelling mistakes in it and I will not fix them, because that is how you know it's me.</p>-->
+<!--      <p>Until then, some facts:</p>-->
+<!--      <ul>-->
+<!--        <li>This song is the one I mean.</li>-->
+<!--        <li>You are better than this website.</li>-->
+<!--        <li>I built a website anyway.</li>-->
+<!--      </ul>-->
+<!--      <p class="sign">Love,<br>Wes</p>-->
+<!--    </div>-->
+    <img class="page" src="letter/2y%20Anniversary-1.jpg" alt="Letter for my love, page 1">
+    <img class="page" src="letter/2y%20Anniversary-2.jpg" alt="Letter for my love, page 2">
+  </article>
+
+  <div class="player" id="player" hidden>
+    <label class="vol" id="vol">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/></svg>
+      <input class="volume" id="volume" type="range" min="0" max="1" step="0.01" value="0.6" aria-label="Volume">
+    </label>
+    <button class="music" id="music" aria-pressed="true">&#9835; pause</button>
+  </div>
+
+  <!-- Drop the song at ./audio/falling.mp3 -->
+  <audio id="song" src="audio/falling.mp3" loop preload="auto"></audio>
+
+  <script>
+    (function () {
+      // ---- tunables ----
+      var HEARTS_PER_SECOND = 10;  // spawn rate while the pointer moves over the envelope
+      var MAX_HEARTS = 60;         // cap on hearts alive at once
+
+      var hearts = document.getElementById('hearts');
+      var env = document.getElementById('envelope');
+      var letter = document.getElementById('letter');
+      var song = document.getElementById('song');
+      var ctl = document.getElementById('music');
+      var player = document.getElementById('player');
+      var vol = document.getElementById('volume');
+      var opened = false;
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ---- hearts ----
+      var HEART_PATH = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
+      var lastSpawn = 0;
+
+      function rand(a, b) { return a + Math.random() * (b - a); }
+
+      function spawnHeart(e) {
+        if (opened || reduceMotion) return;
+        var now = performance.now();
+        if (now - lastSpawn < 1000 / HEARTS_PER_SECOND) return;
+        if (hearts.childElementCount >= MAX_HEARTS) return;
+        lastSpawn = now;
+
+        var h = document.createElement('span');
+        h.className = 'heart';
+        h.innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="' + HEART_PATH + '"/></svg>';
+        h.style.left = e.clientX + 'px';
+        h.style.top = e.clientY + 'px';
+        h.style.setProperty('--size', rand(10, 26).toFixed(0) + 'px');
+        h.style.setProperty('--dx', rand(-40, 40).toFixed(0) + 'px');
+        h.style.setProperty('--fall', rand(120, 260).toFixed(0) + 'px');
+        h.style.setProperty('--rot', rand(-40, 40).toFixed(0) + 'deg');
+        h.style.setProperty('--dur', rand(1.2, 2.2).toFixed(2) + 's');
+        // wine through bright red, same family as the background and the wax seal
+        h.style.color = 'hsl(' + rand(340, 358).toFixed(0) + ' ' + rand(60, 85).toFixed(0) + '% ' + rand(28, 58).toFixed(0) + '%)';
+        h.addEventListener('animationend', function () { h.remove(); });
+        hearts.appendChild(h);
+      }
+      env.addEventListener('pointermove', spawnHeart);
+
+      function setLabel() {
+        var playing = !song.paused;
+        ctl.textContent = '♫ ' + (playing ? 'pause' : 'play');
+        ctl.setAttribute('aria-pressed', String(playing));
+      }
+
+      function reveal() {
+        env.hidden = true;
+        document.body.classList.add('opened'); // photos fade in with the letter
+        letter.hidden = false;
+        void letter.offsetWidth; // force a reflow so the fade-in transition runs
+        letter.classList.add('show');
+      }
+
+      env.addEventListener('click', function () {
+        if (opened) return;
+        opened = true;
+        env.classList.add('opening');
+
+        // play() must be called inside the tap handler or browsers block it
+        [].forEach.call(document.querySelectorAll('.photo video'), function (v) {
+          var q = v.play(); if (q && q.catch) q.catch(function () {}); // poster stays if it can't
+        });
+        var p = song.play();
+        if (p && p.then) {
+          p.then(function () { player.hidden = false; setLabel(); })
+           .catch(function () { player.hidden = true; }); // no file yet, or blocked
+        }
+        setTimeout(reveal, 1000);
+      });
+
+      // ---- volume ----
+      function setVolume() {
+        song.volume = +vol.value;
+        vol.style.setProperty('--v', vol.value);
+      }
+      vol.addEventListener('input', setVolume);
+      // iOS Safari ignores audio.volume (always 1), so hide a slider that can't do anything
+      song.volume = 0.5;
+      if (song.volume !== 0.5) document.getElementById('vol').hidden = true;
+      setVolume();
+
+      // ---- photos ----
+      var backdrop = document.getElementById('backdrop');
+      var frontPhoto = null;
+
+      function bringToFront(ph) {
+        if (!document.body.classList.contains('opened')) return; // photos only exist once the letter is out
+        if (frontPhoto) frontPhoto.classList.remove('front');
+        frontPhoto = ph;
+        // frames are absolute, so the "centre of the screen" is the scroll position plus half the viewport
+        ph.style.setProperty('--fx', (window.scrollX + window.innerWidth / 2) + 'px');
+        ph.style.setProperty('--fy', (window.scrollY + window.innerHeight / 2) + 'px');
+        ph.classList.add('front');
+        backdrop.classList.add('show');
+        document.body.classList.add('lightbox');
+      }
+      function sendBack() {
+        if (!frontPhoto) return;
+        frontPhoto.classList.remove('front');
+        frontPhoto = null;
+        backdrop.classList.remove('show');
+        document.body.classList.remove('lightbox');
+      }
+      [].forEach.call(document.querySelectorAll('.photo'), function (ph) {
+        ph.addEventListener('click', function (e) {
+          if (e.target.closest('.close')) { sendBack(); return; }
+          if (frontPhoto !== ph) bringToFront(ph);
+        });
+        ph.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
+          if (frontPhoto === ph) sendBack(); else bringToFront(ph);
+        });
+      });
+      backdrop.addEventListener('click', sendBack);
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') sendBack(); });
+
+      ctl.addEventListener('click', function () {
+        if (song.paused) { song.play(); } else { song.pause(); }
+        setLabel();
+      });
+      song.addEventListener('play', setLabel);
+      song.addEventListener('pause', setLabel);
+    })();
+  </script>
+</body>
+</html>
